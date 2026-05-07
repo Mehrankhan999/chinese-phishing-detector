@@ -1,0 +1,934 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --surface3: #1e2d45;
+    --border: rgba(99,179,237,0.15);
+    --border2: rgba(99,179,237,0.25);
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #f472b6;
+    --accent5: #fb923c;
+    --danger: #f87171;
+    --warn: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --muted2: #64748b;
+    --font: 'Space Grotesk', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  body { background: var(--bg); font-family: var(--font); color: var(--text); min-height: 100vh; }
+
+  .dash { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px; min-width: 260px; background: var(--surface);
+    border-right: 1px solid var(--border); display: flex; flex-direction: column;
+    padding: 0; position: relative; overflow: hidden;
+  }
+  .sidebar::before {
+    content: ''; position: absolute; top: -80px; left: -80px;
+    width: 300px; height: 300px; background: radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .brand {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-logo {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+  }
+  .brand-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .brand-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .brand-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .brand-tag { font-size: 10px; color: var(--accent); background: rgba(56,189,248,0.1); padding: 2px 8px; border-radius: 20px; border: 1px solid rgba(56,189,248,0.2); margin-top: 6px; display: inline-block; }
+
+  .sidebar-section { padding: 14px 12px 6px; }
+  .section-label { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); padding: 0 8px; margin-bottom: 6px; font-weight: 500; }
+
+  .lang-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.2s; margin-bottom: 4px;
+    position: relative; overflow: hidden;
+  }
+  .lang-card:hover { background: var(--surface2); border-color: var(--border); }
+  .lang-card.active { background: var(--surface3); border-color: var(--border2); }
+  .lang-card.active::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    border-radius: 2px 0 0 2px;
+  }
+  .lang-card.en.active::before { background: var(--accent); }
+  .lang-card.zh.active::before { background: var(--accent4); }
+  .lang-card.es.active::before { background: var(--accent3); }
+  .lang-card.ar.active::before { background: var(--warn); }
+
+  .lang-flag { font-size: 20px; line-height: 1; }
+  .lang-info { flex: 1; min-width: 0; }
+  .lang-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .lang-code { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+  .lang-status {
+    font-size: 9px; padding: 2px 7px; border-radius: 20px; font-weight: 500;
+  }
+  .status-live { background: rgba(52,211,153,0.15); color: var(--accent3); border: 1px solid rgba(52,211,153,0.25); }
+  .status-beta { background: rgba(251,191,36,0.12); color: var(--warn); border: 1px solid rgba(251,191,36,0.2); }
+  .status-wip { background: rgba(248,113,113,0.1); color: var(--danger); border: 1px solid rgba(248,113,113,0.18); }
+
+  .model-stats { padding: 8px 12px 0; }
+  .model-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(99,179,237,0.06); }
+  .model-stat-row:last-child { border-bottom: none; }
+  .model-stat-label { font-size: 11px; color: var(--muted); }
+  .model-stat-val { font-size: 11px; font-family: var(--mono); color: var(--text); font-weight: 500; }
+
+  .sidebar-nav { padding: 8px 12px; margin-top: 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    border-radius: 9px; cursor: pointer; color: var(--muted); font-size: 13px;
+    transition: all 0.18s; margin-bottom: 2px; border: 1px solid transparent;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--surface3); color: var(--accent); border-color: var(--border); }
+  .nav-item i { font-size: 16px; }
+
+  .sidebar-footer { margin-top: auto; padding: 14px 16px; border-top: 1px solid var(--border); }
+  .footer-user { display: flex; align-items: center; gap: 10px; }
+  .user-av { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent4)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; }
+  .user-info { flex: 1; }
+  .user-name { font-size: 12px; font-weight: 500; }
+  .user-role { font-size: 10px; color: var(--muted); }
+
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; }
+  .topbar-lang-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--accent); background: rgba(56,189,248,0.1);
+    padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(56,189,248,0.2);
+    font-family: var(--mono);
+  }
+  .topbar-btn {
+    display: flex; align-items: center; gap: 6px; font-size: 12px;
+    padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 500;
+    border: 1px solid var(--border2); background: rgba(56,189,248,0.08); color: var(--accent);
+    transition: all 0.18s; font-family: var(--font);
+  }
+  .topbar-btn:hover { background: rgba(56,189,248,0.15); }
+  .topbar-btn.primary { background: var(--accent); color: #0a0e1a; border-color: var(--accent); }
+  .topbar-btn.primary:hover { background: #7dd3fc; }
+
+  .content { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  .content::-webkit-scrollbar { width: 5px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* URL INPUT ZONE */
+  .input-zone {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px; margin-bottom: 18px;
+  }
+  .input-zone-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .input-zone-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .url-input-row { display: flex; gap: 10px; }
+  .url-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--text);
+    font-family: var(--mono); outline: none; transition: border-color 0.2s;
+  }
+  .url-input::placeholder { color: var(--muted2); }
+  .url-input:focus { border-color: var(--accent); background: rgba(56,189,248,0.04); }
+  .analyze-btn {
+    padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    background: var(--accent); color: #0a0e1a; border: none; cursor: pointer;
+    font-family: var(--font); display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .analyze-btn:hover { background: #7dd3fc; transform: translateY(-1px); }
+  .analyze-btn:active { transform: translateY(0); }
+  .analyze-btn.loading { background: var(--surface3); color: var(--muted); cursor: not-allowed; }
+
+  .url-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .url-tag {
+    display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--mono);
+    padding: 4px 10px; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+  }
+  .url-tag .tag-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .url-tag .tag-del { cursor: pointer; color: var(--muted2); margin-left: 2px; font-size: 12px; }
+  .url-tag .tag-del:hover { color: var(--danger); }
+
+  /* RESULT PANEL */
+  .result-panel {
+    background: var(--surface); border-radius: 14px; border: 1px solid var(--border);
+    overflow: hidden; margin-bottom: 18px; display: none;
+  }
+  .result-panel.show { display: block; }
+  .result-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+  }
+  .threat-badge {
+    display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
+    padding: 6px 14px; border-radius: 8px;
+  }
+  .threat-high { background: rgba(248,113,113,0.15); color: var(--danger); border: 1px solid rgba(248,113,113,0.25); }
+  .threat-low { background: rgba(52,211,153,0.12); color: var(--accent3); border: 1px solid rgba(52,211,153,0.22); }
+  .threat-medium { background: rgba(251,191,36,0.12); color: var(--warn); border: 1px solid rgba(251,191,36,0.2); }
+
+  .result-url { font-size: 11px; font-family: var(--mono); color: var(--muted); }
+  .result-body { padding: 16px 18px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  .result-metric {
+    background: var(--surface2); border-radius: 10px; padding: 14px;
+    border: 1px solid var(--border);
+  }
+  .metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted2); margin-bottom: 6px; }
+  .metric-value { font-size: 22px; font-weight: 600; font-family: var(--mono); }
+  .metric-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .val-red { color: var(--danger); }
+  .val-green { color: var(--accent3); }
+  .val-blue { color: var(--accent); }
+  .val-warn { color: var(--warn); }
+
+  .features-grid { padding: 0 18px 16px; }
+  .features-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted2); margin-bottom: 10px; }
+  .features-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .feature-tag {
+    font-size: 11px; padding: 4px 10px; border-radius: 6px; font-family: var(--mono);
+    border: 1px solid;
+  }
+  .ft-bad { background: rgba(248,113,113,0.08); color: var(--danger); border-color: rgba(248,113,113,0.2); }
+  .ft-neutral { background: var(--surface2); color: var(--muted); border-color: var(--border); }
+  .ft-good { background: rgba(52,211,153,0.08); color: var(--accent3); border-color: rgba(52,211,153,0.18); }
+
+  /* METRICS ROW */
+  .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; position: relative; overflow: hidden;
+  }
+  .metric-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  }
+  .metric-card.blue::after { background: linear-gradient(90deg, var(--accent), transparent); }
+  .metric-card.purple::after { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .metric-card.green::after { background: linear-gradient(90deg, var(--accent3), transparent); }
+  .metric-card.pink::after { background: linear-gradient(90deg, var(--accent4), transparent); }
+  .metric-card .mc-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+  .metric-card .mc-value { font-size: 28px; font-weight: 700; font-family: var(--mono); }
+  .metric-card .mc-delta { font-size: 11px; color: var(--muted2); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+  .delta-up { color: var(--accent3); }
+  .delta-down { color: var(--danger); }
+
+  /* GRID 2 COLS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; overflow: hidden;
+  }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .panel-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 7px; }
+  .panel-title i { color: var(--accent); font-size: 15px; }
+  .panel-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; }
+
+  /* Progress bars */
+  .prog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .prog-lang { font-size: 12px; color: var(--muted); width: 80px; display: flex; align-items: center; gap: 6px; }
+  .prog-bar-wrap { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .prog-bar { height: 100%; border-radius: 3px; transition: width 1s ease; }
+  .prog-val { font-size: 12px; font-family: var(--mono); color: var(--text); width: 40px; text-align: right; }
+
+  /* Recent scans */
+  .scan-row {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid rgba(99,179,237,0.06);
+  }
+  .scan-row:last-child { border-bottom: none; }
+  .scan-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .scan-phish { background: rgba(248,113,113,0.12); }
+  .scan-legit { background: rgba(52,211,153,0.1); }
+  .scan-info { flex: 1; min-width: 0; }
+  .scan-url { font-size: 11px; font-family: var(--mono); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .scan-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .scan-badge { font-size: 10px; padding: 3px 8px; border-radius: 5px; font-weight: 500; white-space: nowrap; }
+  .sb-phish { background: rgba(248,113,113,0.12); color: var(--danger); }
+  .sb-legit { background: rgba(52,211,153,0.1); color: var(--accent3); }
+
+  /* MODEL PERFORMANCE */
+  .model-row {
+    display: flex; align-items: center; gap: 12px; padding: 10px;
+    background: var(--surface2); border-radius: 9px; margin-bottom: 8px; border: 1px solid var(--border);
+  }
+  .model-flag { font-size: 20px; }
+  .model-info { flex: 1; }
+  .model-name { font-size: 12px; font-weight: 500; }
+  .model-type { font-size: 10px; color: var(--muted); }
+  .model-metrics { display: flex; gap: 12px; }
+  .mm { text-align: center; }
+  .mm-val { font-size: 13px; font-family: var(--mono); font-weight: 600; }
+  .mm-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Chart wrapper */
+  .chart-wrap { position: relative; height: 180px; width: 100%; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 14px; background: var(--surface2); padding: 4px; border-radius: 9px; }
+  .tab { flex: 1; padding: 6px 10px; text-align: center; font-size: 12px; border-radius: 6px; cursor: pointer; color: var(--muted); transition: all 0.18s; border: 1px solid transparent; }
+  .tab.active { background: var(--surface3); color: var(--text); border-color: var(--border); }
+
+  /* Loading spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 14px; height: 14px; border: 2px solid rgba(10,14,26,0.3); border-top-color: #0a0e1a; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+  /* Alerts */
+  .alert-item { display: flex; gap: 10px; padding: 10px; background: var(--surface2); border-radius: 9px; border: 1px solid var(--border); margin-bottom: 8px; }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .alert-body { flex: 1; }
+  .alert-title { font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+  .alert-desc { font-size: 11px; color: var(--muted); }
+  .alert-time { font-size: 10px; color: var(--muted2); white-space: nowrap; }
+
+  .live-dot { width: 7px; height: 7px; background: var(--accent3); border-radius: 50%; display: inline-block; margin-right: 4px; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .live-dot { animation: pulse 1.8s ease-in-out infinite; }
+
+  .confidence-ring { position: relative; width: 80px; height: 80px; }
+  .confidence-ring svg { width: 80px; height: 80px; transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--surface3); stroke-width: 8; }
+  .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dasharray 1s ease; }
+  .ring-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+  .ring-pct { font-size: 16px; font-weight: 700; font-family: var(--mono); }
+  .ring-sub { font-size: 9px; color: var(--muted); }
+</style>
+
+<div class="dash">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="brand-name">PhishGuard AI</div>
+          <div class="brand-sub">Multilingual Detection</div>
+        </div>
+      </div>
+      <div class="brand-tag">FYP 2025 — CSIT</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Language Models</div>
+
+      <div class="lang-card en active" onclick="selectLang('en',this)">
+        <div class="lang-flag">🇬🇧</div>
+        <div class="lang-info">
+          <div class="lang-name">English</div>
+          <div class="lang-code">BERT-EN v2.1</div>
+        </div>
+        <span class="lang-status status-live">Live</span>
+      </div>
+
+      <div class="lang-card zh" onclick="selectLang('zh',this)">
+        <div class="lang-flag">🇨🇳</div>
+        <div class="lang-info">
+          <div class="lang-name">Chinese</div>
+          <div class="lang-code">BERT-ZH v1.8</div>
+        </div>
+        <span class="lang-status status-live">Live</span>
+      </div>
+
+      <div class="lang-card es" onclick="selectLang('es',this)">
+        <div class="lang-flag">🇪🇸</div>
+        <div class="lang-info">
+          <div class="lang-name">Spanish</div>
+          <div class="lang-code">BERT-ES v0.9</div>
+        </div>
+        <span class="lang-status status-beta">Beta</span>
+      </div>
+
+      <div class="lang-card ar" onclick="selectLang('ar',this)">
+        <div class="lang-flag">🇸🇦</div>
+        <div class="lang-info">
+          <div class="lang-name">Arabic</div>
+          <div class="lang-code">AraBERT v0.5</div>
+        </div>
+        <span class="lang-status status-wip">Training</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="padding-top: 0;">
+      <div id="lang-stats" class="model-stats">
+        <div class="model-stat-row">
+          <span class="model-stat-label">Accuracy</span>
+          <span class="model-stat-val" id="stat-acc">97.4%</span>
+        </div>
+        <div class="model-stat-row">
+          <span class="model-stat-label">F1 Score</span>
+          <span class="model-stat-val" id="stat-f1">0.971</span>
+        </div>
+        <div class="model-stat-row">
+          <span class="model-stat-label">Precision</span>
+          <span class="model-stat-val" id="stat-prec">0.968</span>
+        </div>
+        <div class="model-stat-row">
+          <span class="model-stat-label">Recall</span>
+          <span class="model-stat-val" id="stat-rec">0.974</span>
+        </div>
+        <div class="model-stat-row">
+          <span class="model-stat-label">Training Data</span>
+          <span class="model-stat-val" id="stat-data">85K URLs</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="section-label">Navigation</div>
+      <div class="nav-item active" onclick="showSection('overview',this)">
+        <i class="ti ti-layout-dashboard" aria-hidden="true"></i> Overview
+      </div>
+      <div class="nav-item" onclick="showSection('scanner',this)">
+        <i class="ti ti-scan" aria-hidden="true"></i> URL Scanner
+      </div>
+      <div class="nav-item" onclick="showSection('models',this)">
+        <i class="ti ti-brain" aria-hidden="true"></i> Model Performance
+      </div>
+      <div class="nav-item" onclick="showSection('history',this)">
+        <i class="ti ti-history" aria-hidden="true"></i> Scan History
+      </div>
+      <div class="nav-item" onclick="showSection('alerts',this)">
+        <i class="ti ti-bell-ringing" aria-hidden="true"></i> Threat Alerts
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="footer-user">
+        <div class="user-av">FY</div>
+        <div class="user-info">
+          <div class="user-name">FYP Research Team</div>
+          <div class="user-role">CSIT Department</div>
+        </div>
+        <i class="ti ti-settings" style="color:var(--muted);font-size:16px;cursor:pointer" aria-hidden="true"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbar-title">
+        <span class="live-dot"></span> Detection Dashboard — Overview
+      </span>
+      <div class="topbar-lang-badge" id="topbar-lang">
+        <span id="tl-flag">🇬🇧</span> English Model Active
+      </div>
+      <button class="topbar-btn" onclick="exportReport()">
+        <i class="ti ti-download" aria-hidden="true"></i> Export Report
+      </button>
+      <button class="topbar-btn primary" id="scan-all-btn" onclick="runBatchScan()">
+        <i class="ti ti-player-play" aria-hidden="true"></i> Batch Scan
+      </button>
+    </div>
+
+    <div class="content" id="main-content">
+
+      <!-- METRICS ROW -->
+      <div class="metrics-row">
+        <div class="metric-card blue">
+          <div class="mc-label">Total URLs Scanned</div>
+          <div class="mc-value" style="color:var(--accent)" id="mc-total">12,847</div>
+          <div class="mc-delta"><span class="delta-up">↑ 348</span> this session</div>
+        </div>
+        <div class="metric-card purple">
+          <div class="mc-label">Phishing Detected</div>
+          <div class="mc-value" style="color:var(--accent2)" id="mc-phish">3,291</div>
+          <div class="mc-delta"><span class="delta-down">↑ 12%</span> detection rate</div>
+        </div>
+        <div class="metric-card green">
+          <div class="mc-label">Avg. Confidence</div>
+          <div class="mc-value" style="color:var(--accent3)" id="mc-conf">94.7%</div>
+          <div class="mc-delta"><span class="delta-up">↑ 2.1%</span> vs last week</div>
+        </div>
+        <div class="metric-card pink">
+          <div class="mc-label">Languages Active</div>
+          <div class="mc-value" style="color:var(--accent4)">4</div>
+          <div class="mc-delta">EN · ZH · ES · AR</div>
+        </div>
+      </div>
+
+      <!-- URL INPUT -->
+      <div class="input-zone">
+        <div class="input-zone-header">
+          <div class="input-zone-title">
+            <i class="ti ti-link" style="color:var(--accent);font-size:15px" aria-hidden="true"></i>
+            URL Analysis Engine
+            <span class="topbar-lang-badge" id="input-lang-badge" style="font-size:10px; padding:2px 8px;">🇬🇧 English</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted)">Supports bulk entry · paste multiple URLs</div>
+        </div>
+        <div class="url-input-row">
+          <input class="url-input" id="url-input" type="text" placeholder="https://example.com — paste URL or domain to analyze..." />
+          <button class="analyze-btn" id="analyze-btn" onclick="analyzeURL()">
+            <i class="ti ti-shield-search" aria-hidden="true"></i> Analyze
+          </button>
+        </div>
+        <div class="url-tags" id="url-tags"></div>
+      </div>
+
+      <!-- RESULT PANEL -->
+      <div class="result-panel" id="result-panel">
+        <div class="result-header">
+          <div>
+            <div class="threat-badge threat-high" id="result-verdict">
+              <span>⚠</span> PHISHING DETECTED
+            </div>
+            <div class="result-url" id="result-url" style="margin-top:6px">https://paypa1-secure-login.tk/verify</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div class="confidence-ring">
+              <svg viewBox="0 0 80 80">
+                <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                <circle class="ring-fill" id="ring-circle" cx="40" cy="40" r="34" stroke="var(--danger)"
+                  stroke-dasharray="175 213" />
+              </svg>
+              <div class="ring-label">
+                <div class="ring-pct" id="ring-pct" style="color:var(--danger)">82%</div>
+                <div class="ring-sub">threat</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);text-align:right">
+              <div id="result-lang-used">🇬🇧 English Model</div>
+              <div style="margin-top:3px" id="result-time">Analyzed in 0.34s</div>
+              <div style="margin-top:3px;color:var(--accent2)" id="result-model">BERT-EN v2.1</div>
+            </div>
+          </div>
+        </div>
+        <div class="result-body">
+          <div class="result-metric">
+            <div class="metric-label">Phishing Probability</div>
+            <div class="metric-value val-red" id="rm-prob">82.4%</div>
+            <div class="metric-sub">High confidence threat</div>
+          </div>
+          <div class="result-metric">
+            <div class="metric-label">URL Entropy Score</div>
+            <div class="metric-value val-warn" id="rm-entropy">4.71</div>
+            <div class="metric-sub">Abnormal character distribution</div>
+          </div>
+          <div class="result-metric">
+            <div class="metric-label">Domain Age</div>
+            <div class="metric-value val-red" id="rm-age">3 days</div>
+            <div class="metric-sub">Newly registered domain</div>
+          </div>
+        </div>
+        <div class="features-grid">
+          <div class="features-title">Detected Indicators</div>
+          <div class="features-list" id="feature-tags"></div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Detection Distribution</div>
+            <div class="tabs" style="margin-bottom:0;width:auto">
+              <div class="tab active" onclick="switchTab('week',this)">Week</div>
+              <div class="tab" onclick="switchTab('month',this)">Month</div>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:200px">
+            <canvas id="detChart" role="img" aria-label="Bar chart showing phishing vs legitimate URL detection per day"></canvas>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="ti ti-chart-donut" aria-hidden="true"></i> Language Breakdown</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div class="chart-wrap" style="height:160px;width:160px;flex-shrink:0">
+              <canvas id="langChart" role="img" aria-label="Donut chart showing URL scan distribution across languages"></canvas>
+            </div>
+            <div style="flex:1">
+              <div class="prog-row">
+                <div class="prog-lang">🇬🇧 EN</div>
+                <div class="prog-bar-wrap"><div class="prog-bar" style="width:62%;background:var(--accent)"></div></div>
+                <div class="prog-val" style="color:var(--accent)">62%</div>
+              </div>
+              <div class="prog-row">
+                <div class="prog-lang">🇨🇳 ZH</div>
+                <div class="prog-bar-wrap"><div class="prog-bar" style="width:24%;background:var(--accent4)"></div></div>
+                <div class="prog-val" style="color:var(--accent4)">24%</div>
+              </div>
+              <div class="prog-row">
+                <div class="prog-lang">🇪🇸 ES</div>
+                <div class="prog-bar-wrap"><div class="prog-bar" style="width:9%;background:var(--accent3)"></div></div>
+                <div class="prog-val" style="color:var(--accent3)">9%</div>
+              </div>
+              <div class="prog-row">
+                <div class="prog-lang">🇸🇦 AR</div>
+                <div class="prog-bar-wrap"><div class="prog-bar" style="width:5%;background:var(--warn)"></div></div>
+                <div class="prog-val" style="color:var(--warn)">5%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODEL PERFORMANCE + RECENT SCANS -->
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="ti ti-brain" aria-hidden="true"></i> Model Performance</div>
+          </div>
+          <div class="model-row">
+            <div class="model-flag">🇬🇧</div>
+            <div class="model-info">
+              <div class="model-name">English BERT</div>
+              <div class="model-type">Fine-tuned PhishBERT</div>
+            </div>
+            <div class="model-metrics">
+              <div class="mm"><div class="mm-val" style="color:var(--accent3)">97.4%</div><div class="mm-label">Acc</div></div>
+              <div class="mm"><div class="mm-val" style="color:var(--accent)">0.971</div><div class="mm-label">F1</div></div>
+              <div class="mm"><div class="mm-val" style="color:var(--accent2)">85K</div><div class="mm-label">Data</div></div>
+            </div>
+          </div>
+          <div class="model-row">
+            <div class="model-flag">🇨🇳</div>
+            <div class="model-info">
+              <div class="model-name">Chinese BERT</div>
+              <div class="model-type">Chinese-BERT-wwm</div>
+            </div>
+            <div class="model-metrics">
+              <div class="mm"><div class="mm-val" style="color:var(--accent3)">95.8%</div><div class="mm-label">Acc</div></div>
+              <div class="mm"><div class="mm-val" style="color:var(--accent)">0.954</div><div class="mm-label">F1</div></div>
+              <div class="mm"><div class="mm-val" style="color:var(--accent2)">62K</div><div class="mm-label">Data</div></div>
+            </div>
+          </div>
+          <div class="model-row">
+            <div class="model-flag">🇪🇸</div>
+            <div class="model-info">
+              <div class="model-name">Spanish BERT</div>
+              <div class="model-type">BETO (Beta)</div>
+            </div>
+            <div class="model-metrics">
+              <div class="mm"><div class="mm-val" style="color:var(--warn)">88.2%</div><div class="mm-label">Acc</div></div>
+              <div class="mm"><div class="mm-val" style="color:var(--warn)">0.876</div><div class="mm-label">F1</div></div>
+              <div class="mm"><div class="mm-val" style="color:var(--accent2)">31K</div><div class="mm-label">Data</div></div>
+            </div>
+          </div>
+          <div class="model-row">
+            <div class="model-flag">🇸🇦</div>
+            <div class="model-info">
+              <div class="model-name">Arabic BERT</div>
+              <div class="model-type">AraBERT (Training)</div>
+            </div>
+            <div class="model-metrics">
+              <div class="mm"><div class="mm-val" style="color:var(--danger)">74.1%</div><div class="mm-label">Acc</div></div>
+              <div class="mm"><div class="mm-val" style="color:var(--danger)">0.731</div><div class="mm-label">F1</div></div>
+              <div class="mm"><div class="mm-val" style="color:var(--accent2)">18K</div><div class="mm-label">Data</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="ti ti-history" aria-hidden="true"></i> Recent Scans</div>
+            <span style="font-size:11px;color:var(--muted)">Last 24h</span>
+          </div>
+          <div id="recent-scans">
+            <div class="scan-row">
+              <div class="scan-icon scan-phish">⚠️</div>
+              <div class="scan-info">
+                <div class="scan-url">paypa1-secure.tk/login</div>
+                <div class="scan-meta">🇬🇧 English · 2 min ago</div>
+              </div>
+              <span class="scan-badge sb-phish">Phishing</span>
+            </div>
+            <div class="scan-row">
+              <div class="scan-icon scan-legit">✅</div>
+              <div class="scan-info">
+                <div class="scan-url">github.com/user/repo</div>
+                <div class="scan-meta">🇬🇧 English · 5 min ago</div>
+              </div>
+              <span class="scan-badge sb-legit">Legitimate</span>
+            </div>
+            <div class="scan-row">
+              <div class="scan-icon scan-phish">⚠️</div>
+              <div class="scan-info">
+                <div class="scan-url">建设银行-网银.com/verify</div>
+                <div class="scan-meta">🇨🇳 Chinese · 11 min ago</div>
+              </div>
+              <span class="scan-badge sb-phish">Phishing</span>
+            </div>
+            <div class="scan-row">
+              <div class="scan-icon scan-legit">✅</div>
+              <div class="scan-info">
+                <div class="scan-url">amazon.es/products/laptop</div>
+                <div class="scan-meta">🇪🇸 Spanish · 18 min ago</div>
+              </div>
+              <span class="scan-badge sb-legit">Legitimate</span>
+            </div>
+            <div class="scan-row">
+              <div class="scan-icon scan-phish">⚠️</div>
+              <div class="scan-info">
+                <div class="scan-url">microsft-login.tk/account</div>
+                <div class="scan-meta">🇬🇧 English · 24 min ago</div>
+              </div>
+              <span class="scan-badge sb-phish">Phishing</span>
+            </div>
+            <div class="scan-row">
+              <div class="scan-icon scan-phish">⚠️</div>
+              <div class="scan-info">
+                <div class="scan-url">بنك-الراجحي.net/تسجيل</div>
+                <div class="scan-meta">🇸🇦 Arabic · 31 min ago</div>
+              </div>
+              <span class="scan-badge sb-phish">Phishing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- THREAT ALERTS -->
+      <div class="panel" style="margin-bottom:18px">
+        <div class="panel-header">
+          <div class="panel-title"><i class="ti ti-bell-ringing" aria-hidden="true"></i> Active Threat Alerts</div>
+          <span class="scan-badge sb-phish" style="font-size:11px">3 Active</span>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon">🔴</div>
+          <div class="alert-body">
+            <div class="alert-title" style="color:var(--danger)">High-Volume Phishing Campaign Detected</div>
+            <div class="alert-desc">17 URLs targeting PayPal users detected in the last hour — English model flagged spoofed domains with homoglyph substitutions.</div>
+          </div>
+          <div class="alert-time">2m ago</div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon">🟡</div>
+          <div class="alert-body">
+            <div class="alert-title" style="color:var(--warn)">Chinese Language Spike — Banking Sector</div>
+            <div class="alert-desc">Abnormal increase in Chinese phishing attempts targeting ICBC and CCB customers. BERT-ZH confidence averaging 91.3%.</div>
+          </div>
+          <div class="alert-time">15m ago</div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon">🟠</div>
+          <div class="alert-body">
+            <div class="alert-title" style="color:var(--accent5)">Arabic Model Retraining Triggered</div>
+            <div class="alert-desc">AraBERT accuracy dropped below threshold (74%). Additional 3,200 labeled Arabic URLs queued for retraining pipeline.</div>
+          </div>
+          <div class="alert-time">1h ago</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const langData = {
+  en: { name:'English', flag:'🇬🇧', acc:'97.4%', f1:'0.971', prec:'0.968', rec:'0.974', data:'85K URLs', color:'#38bdf8' },
+  zh: { name:'Chinese', flag:'🇨🇳', acc:'95.8%', f1:'0.954', prec:'0.951', rec:'0.957', data:'62K URLs', color:'#f472b6' },
+  es: { name:'Spanish', flag:'🇪🇸', acc:'88.2%', f1:'0.876', prec:'0.882', rec:'0.871', data:'31K URLs', color:'#34d399' },
+  ar: { name:'Arabic',  flag:'🇸🇦', acc:'74.1%', f1:'0.731', prec:'0.744', rec:'0.718', data:'18K URLs', color:'#fbbf24' }
+};
+
+function selectLang(code, el) {
+  document.querySelectorAll('.lang-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const d = langData[code];
+  document.getElementById('stat-acc').textContent = d.acc;
+  document.getElementById('stat-f1').textContent = d.f1;
+  document.getElementById('stat-prec').textContent = d.prec;
+  document.getElementById('stat-rec').textContent = d.rec;
+  document.getElementById('stat-data').textContent = d.data;
+  document.getElementById('topbar-lang').innerHTML = `<span>${d.flag}</span> ${d.name} Model Active`;
+  document.getElementById('input-lang-badge').textContent = `${d.flag} ${d.name}`;
+}
+
+const urlQueue = [];
+document.getElementById('url-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addURL();
+});
+
+function addURL() {
+  const inp = document.getElementById('url-input');
+  const v = inp.value.trim();
+  if (!v) return;
+  urlQueue.push(v);
+  renderTags();
+  inp.value = '';
+}
+
+function renderTags() {
+  const c = document.getElementById('url-tags');
+  c.innerHTML = urlQueue.map((u,i) => `
+    <div class="url-tag">
+      <span class="tag-dot" style="background:var(--accent)"></span>
+      ${u.length > 40 ? u.substring(0,40)+'...' : u}
+      <span class="tag-del" onclick="removeTag(${i})">×</span>
+    </div>`).join('');
+}
+
+function removeTag(i) {
+  urlQueue.splice(i,1);
+  renderTags();
+}
+
+const phishIndicators = [
+  ['Homoglyph substitution','ft-bad'],['Typosquatting','ft-bad'],['New domain < 7 days','ft-bad'],
+  ['Free TLD (.tk/.ml)','ft-bad'],['No HTTPS','ft-bad'],['IP in URL','ft-bad'],
+  ['Excessive subdomains','ft-bad'],['Long URL (>100 chars)','ft-bad'],['Brand name in path','ft-neutral'],
+  ['Redirects detected','ft-neutral'],['Suspicious port','ft-neutral']
+];
+const legitIndicators = [
+  ['Valid HTTPS cert','ft-good'],['Established domain','ft-good'],['Consistent TLD','ft-good'],
+  ['No redirects','ft-good'],['Short clean URL','ft-good'],['Known CDN provider','ft-neutral']
+];
+
+function analyzeURL() {
+  const inp = document.getElementById('url-input');
+  const url = inp.value.trim() || (urlQueue[0] || 'https://example-secure-login.tk/verify');
+  const btn = document.getElementById('analyze-btn');
+  btn.classList.add('loading');
+  btn.innerHTML = '<div class="spinner"></div> Analyzing...';
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.innerHTML = '<i class="ti ti-shield-search" aria-hidden="true"></i> Analyze';
+    const isPhish = Math.random() > 0.4;
+    const prob = isPhish ? (70 + Math.random()*28).toFixed(1) : (5 + Math.random()*20).toFixed(1);
+    const entropy = isPhish ? (3.8 + Math.random()*1.5).toFixed(2) : (2.1 + Math.random()*0.8).toFixed(2);
+    const age = isPhish ? ['2 days','5 days','1 week','3 days'][Math.floor(Math.random()*4)] : ['3 years','7 months','2 years','5 years'][Math.floor(Math.random()*4)];
+    const panel = document.getElementById('result-panel');
+    panel.classList.add('show');
+    document.getElementById('result-url').textContent = url || 'https://analyzed-url.example';
+    document.getElementById('rm-prob').textContent = prob + '%';
+    document.getElementById('rm-entropy').textContent = entropy;
+    document.getElementById('rm-age').textContent = age;
+    const verdict = document.getElementById('result-verdict');
+    const ring = document.getElementById('ring-circle');
+    const ringPct = document.getElementById('ring-pct');
+    const pctNum = parseFloat(prob);
+    const dashArr = Math.round((pctNum/100)*213);
+    ring.setAttribute('stroke-dasharray', dashArr + ' 213');
+    ringPct.textContent = Math.round(pctNum) + '%';
+    if (isPhish) {
+      verdict.className = 'threat-badge threat-high';
+      verdict.innerHTML = '<span>⚠</span> PHISHING DETECTED';
+      ring.setAttribute('stroke','var(--danger)');
+      ringPct.style.color = 'var(--danger)';
+    } else {
+      verdict.className = 'threat-badge threat-low';
+      verdict.innerHTML = '<span>✓</span> LEGITIMATE';
+      ring.setAttribute('stroke','var(--accent3)');
+      ringPct.style.color = 'var(--accent3)';
+    }
+    const indicators = isPhish ?
+      phishIndicators.slice(0, 3 + Math.floor(Math.random()*4)) :
+      legitIndicators.slice(0, 3 + Math.floor(Math.random()*2));
+    document.getElementById('feature-tags').innerHTML =
+      indicators.map(([t,c]) => `<span class="feature-tag ${c}">${t}</span>`).join('');
+    const activeLang = document.querySelector('.lang-card.active');
+    const lcode = activeLang ? activeLang.getAttribute('onclick').match(/'(\w+)'/)[1] : 'en';
+    const ld = langData[lcode];
+    document.getElementById('result-lang-used').textContent = ld.flag + ' ' + ld.name + ' Model';
+    document.getElementById('result-model').textContent = 'BERT-' + lcode.toUpperCase() + (lcode === 'ar' ? ' (AraBERT)' : '');
+    document.getElementById('result-time').textContent = 'Analyzed in ' + (0.1 + Math.random()*0.6).toFixed(2) + 's';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 1200);
+}
+
+function runBatchScan() {
+  const btn = document.getElementById('scan-all-btn');
+  btn.innerHTML = '<div class="spinner" style="border-color:rgba(10,14,26,0.3);border-top-color:#0a0e1a"></div> Scanning...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = '<i class="ti ti-player-play" aria-hidden="true"></i> Batch Scan';
+    btn.disabled = false;
+    const mc = document.getElementById('mc-total');
+    mc.textContent = (parseInt(mc.textContent.replace(',','')) + Math.floor(Math.random()*50 + 10)).toLocaleString();
+  }, 2000);
+}
+
+function exportReport() {
+  const d = new Date().toISOString().split('T')[0];
+  alert('Report exported: PhishGuard_Report_' + d + '.pdf');
+}
+
+function showSection(sec, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  const titles = { overview:'Detection Dashboard — Overview', scanner:'URL Scanner', models:'Model Performance', history:'Scan History', alerts:'Threat Alerts' };
+  document.getElementById('topbar-title').innerHTML = '<span class="live-dot"></span> ' + titles[sec];
+}
+
+function switchTab(t, el) {
+  el.closest('.tabs').querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  const isMonth = t === 'month';
+  detChart.data.labels = isMonth ?
+    ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] :
+    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  detChart.data.datasets[0].data = isMonth ?
+    [420,380,510,470,530,490,560,620,580,640,710,680] :
+    [142,187,163,210,174,248,196];
+  detChart.data.datasets[1].data = isMonth ?
+    [180,210,240,200,280,260,310,350,320,390,430,410] :
+    [58,72,61,89,67,112,81];
+  detChart.update();
+}
+
+let detChart, langChart;
+window.addEventListener('load', () => {
+  detChart = new Chart(document.getElementById('detChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets: [
+        { label: 'Legitimate', data: [142,187,163,210,174,248,196], backgroundColor: 'rgba(52,211,153,0.7)', borderRadius: 4 },
+        { label: 'Phishing', data: [58,72,61,89,67,112,81], backgroundColor: 'rgba(248,113,113,0.75)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: '#1a2235', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: '#1e3a5f', borderWidth: 1 }
+      },
+      scales: {
+        x: { ticks: { color: '#64748b', font: { size: 11 } }, grid: { color: 'rgba(99,179,237,0.05)' } },
+        y: { ticks: { color: '#64748b', font: { size: 11 } }, grid: { color: 'rgba(99,179,237,0.06)' } }
+      }
+    }
+  });
+
+  langChart = new Chart(document.getElementById('langChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['English','Chinese','Spanish','Arabic'],
+      datasets: [{ data: [62,24,9,5], backgroundColor: ['#38bdf8','#f472b6','#34d399','#fbbf24'], borderWidth: 0, hoverOffset: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '72%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: '#1a2235', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: '#1e3a5f', borderWidth: 1 }
+      }
+    }
+  });
+});
+</script>
